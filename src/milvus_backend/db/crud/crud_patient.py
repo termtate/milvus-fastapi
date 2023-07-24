@@ -62,9 +62,9 @@ class CRUDPatient:
     def delete_patients(
         self, 
         collection: Collection,
-        id: int
+        *id: int
     ):
-        return collection.delete(id)
+        return collection.delete(*id)
         
         
 crud_patient = CRUDPatient()

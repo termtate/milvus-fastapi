@@ -1,5 +1,5 @@
 from types import TracebackType
-from pymilvus import connections, CollectionSchema, DataType, utility
+from pymilvus import connections, CollectionSchema, DataType, utility, FieldSchema
 from pymilvus import Collection as _Collection
 from typing import Union, Optional, overload, List, Sequence, Callable
 from contextlib import contextmanager, AbstractContextManager
@@ -141,11 +141,21 @@ class Collection:
     
     
     def fields(self, include_auto_id: bool = False) -> list[str]:
+        fields: list[FieldSchema] = self.collection.schema.fields 
         return [
-            field.name for field in self.collection.schema.fields 
-            if field.dtype != DataType.FLOAT_VECTOR
-            and (include_auto_id and (not field.is_primary or not field.auto_id))
+            _.name for _ in filter(
+                lambda field: not(
+                    field.dtype == DataType.FLOAT_VECTOR
+                    or (field.is_primary and (field.auto_id and include_auto_id))
+                ),
+                fields
+            )
         ]
+        # return [
+        #     field.name for field in self.collection.schema.fields 
+        #     if field.dtype != DataType.FLOAT_VECTOR
+        #     and (not field.is_primary or (not field.auto_id))
+        # ]
     
     @cached_property
     def primary_field(self) -> str:
@@ -169,8 +179,8 @@ class Collection:
             output_fields=output_fields
         )
     
-    def delete(self, id: int):
-        return self.collection.delete(f"id in [{id}]")
+    def delete(self, *id: int):
+        return self.collection.delete(f"id in [{', '.join(str(_) for _ in id)}]")
     
     
     def ann_insert(self, df: pd.DataFrame): # TODO: 其他输入类型
