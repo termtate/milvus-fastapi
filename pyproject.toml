@@ -32,3 +32,7 @@ dev-dependencies = []
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[[sources]]
+name = "default"
+url = "https://mirror.baidu.com/pypi/simple"
