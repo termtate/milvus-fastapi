@@ -38,8 +38,7 @@ class CRUDPatient:
             df,
             embedding_field=settings.milvus.EMBEDDING_FIELD_NAME
         )
-        
-        collection.load()
+
         collection.flush()
         
         return r
@@ -55,10 +54,8 @@ class CRUDPatient:
         
         col = DataCollection(res).to_dict()
         return [
-            PatientANNResp(**_)
-            for _ in [
-                dict(zip(col["schema"], row)) 
-                for row in col["iterable"]
+            PatientANNResp(**_) for _ in [
+                dict(zip(col["schema"], row)) for row in col["iterable"]
             ]
         ]
         
