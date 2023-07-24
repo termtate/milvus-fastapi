@@ -38,7 +38,6 @@ class CRUDPatient:
 
         collection.flush()
 
-        # print(DataCollection(r).to_list())
         return [
             _["res"] for _ in r.to_list(kv_format=True) # type: ignore
         ]

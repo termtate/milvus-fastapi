@@ -17,7 +17,6 @@ def ann_search_patients(
 
 @router.get("/{patient_id}", response_model=list[Patient])
 def read_patients(patient_id: int, collection: Collection = Depends(get_collection)):
-    print(crud_patient.get_patient_by_id(collection, id=patient_id))
     return crud_patient.get_patient_by_id(collection, id=patient_id)
 
 @router.get("/", response_model=list[Patient])

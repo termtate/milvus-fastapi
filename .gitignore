@@ -11,3 +11,8 @@ wheels/
 
 # tests
 test*.py
+
+#ide
+.vscode
+.idea
+
