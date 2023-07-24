@@ -53,7 +53,7 @@ def search_pipe(
         .input('query')
         .map('query', 'vec', text_embedding_model)
         .flat_map(
-            'vec',
+            'vec',  
             (primary_field, 'score') + tuple(_ for _ in fields if _ != primary_field),
             ops.ann_search.milvus_client(
                 host=host,
