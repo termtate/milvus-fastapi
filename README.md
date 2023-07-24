@@ -1,8 +1,5 @@
-# Android MVI Architecture with JWT Authentication Backend
+# milvus-backend
 
+## 运行前准备
 
-The backend for Android mvi example application. 
-
-## Description
-- fastapi backend
-- jwt token authentication
+1. 
