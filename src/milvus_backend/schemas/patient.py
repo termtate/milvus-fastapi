@@ -37,3 +37,7 @@ class PatientANNResp(Patient):
     score: float
     
 
+# @dataclass
+# class PatientDelete
+    
+

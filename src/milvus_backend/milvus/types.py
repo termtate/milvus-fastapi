@@ -1,4 +1,5 @@
 from typing import Any, Sequence, TypedDict
+from typing_extensions import Required
 
 
 class IndexParams(TypedDict):

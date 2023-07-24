@@ -58,5 +58,13 @@ class CRUDPatient:
                 dict(zip(col["schema"], row)) for row in col["iterable"]
             ]
         ]
+    
+    def delete_patients(
+        self, 
+        collection: Collection,
+        id: int
+    ):
+        return collection.delete(id)
+        
         
 crud_patient = CRUDPatient()

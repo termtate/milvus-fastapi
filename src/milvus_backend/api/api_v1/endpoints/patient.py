@@ -50,3 +50,19 @@ def create_patients(
 ): # TODO: 优化调用速度
     return crud_patient.create(collection, *patients)
 
+@router.delete("/{patient_id}")
+def delete_patient(
+    patient_id: int,
+    collection: Collection = Depends(get_collection)
+):
+    return crud_patient.delete_patients(collection, id=patient_id)
+
+@router.delete("/test/{patient_id}")
+def test(
+    patient_id: list[int],
+    # collection: Collection = Depends(get_collection)
+):
+    
+    return {
+        "s": patient_id
+    }

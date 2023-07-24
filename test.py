@@ -1,4 +1,21 @@
-from pprint import pprint
+from functools import cached_property
+from dataclasses import dataclass
 
-a = {'param': {'metric_type': 'L2', 'index_type': 'FLAT'}, 'limit': 10, 'output_fields': ['id', 'id_card_number', 'name', 'hospitalize_num', 'case_number', 'sex', 'age', 'phone_number', 'seizure_evolution']} 
-b = {'param': {'metric_type': 'L2', 'index_type': 'FLAT'}, 'limit': 10}
+@dataclass
+class A:
+    a: int
+    
+    @cached_property
+    def b(self):
+        print(11)
+        return self.a + 1
+
+
+a = A(1)
+
+print(a.b)
+
+a.a = 2
+
+print(a.b)
+

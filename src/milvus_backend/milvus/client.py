@@ -10,6 +10,7 @@ from milvus.types import IndexParams, SearchConfig
 from functools import cached_property
 from milvus.pipe import insert_pipe, search_pipe
 from logging import getLogger
+from pymilvus.exceptions import PrimaryKeyException
 
 logger = getLogger(__name__)
 
@@ -93,6 +94,14 @@ class Collection:
         self.conn = connection
         self.collection = collection
         
+        self._search_pipe = search_pipe(
+            host=self.conn.host,
+            port=self.conn.port,
+            collection_name=self.collection.name,
+            primary_field=self.primary_field,
+            output_fields=tuple(self.fields)
+        )
+        
     def load(self):
         self.collection.load()
         
@@ -118,9 +127,21 @@ class Collection:
         return [
             _.name for _ in self.collection.schema.fields if _.dtype != DataType.FLOAT_VECTOR
         ]
+    
+    @cached_property
+    def primary_field(self) -> str:
+        primary_field = self.collection.schema.primary_field
+        if primary_field is None:
+            raise PrimaryKeyException()
+        return primary_field.name
         
     
     def query(self, expr: str, output_fields: Sequence[str] | None = None): # TODO: 防止注入
+        '''
+        进行标量查询
+        args:
+            expr: 查询表达式，具体参见 https://milvus.io/docs/boolean.md
+        '''
         if output_fields is None:
             output_fields = self.fields
         
@@ -128,6 +149,9 @@ class Collection:
             expr=expr,
             output_fields=output_fields
         )
+    
+    def delete(self, id: int):
+        return self.collection.delete(f"id == {id}")
     
     
     def ann_insert(self, df: pd.DataFrame, embedding_field: str): # TODO: 其他输入类型
@@ -159,25 +183,6 @@ class Collection:
         )(df)
     
     
-    @_cache
-    def _create_search_pipe(
-        self, 
-        search_config: SearchConfig
-    ):
-        '''
-        根据参数创建搜索数据的管道。
-        `@_cache` 装饰器用于缓存上次输入参数创建的管道，如果本次输入参数相同就复用上次创建的管道
-        '''
-        primary_field = self.collection.schema.primary_field.name # type: ignore
-        
-        return search_pipe(
-            host=self.conn.host,
-            port=self.conn.port,
-            collection_name=self.collection.name,
-            primary_field=primary_field,
-            **search_config
-        )
-    
     @overload
     def ann_search(self, query: str, search_config: Optional[SearchConfig]) -> DataQueue: ...
     @overload
@@ -197,9 +202,16 @@ class Collection:
         '''
         config: SearchConfig = search_config if search_config is not None else {}
         
-        if "output_fields" not in config:
-            config["output_fields"] = self.fields
-        return self._create_search_pipe(config)(query)
+        if "output_fields" in config and tuple(config["output_fields"]) != self.fields:
+            return search_pipe(
+                host=self.conn.host,
+                port=self.conn.port,
+                collection_name=self.collection.name,
+                primary_field=self.primary_field,
+                output_fields=tuple(config["output_fields"])
+            )(config, query)
+            
+        return self._search_pipe(config, query)
 
 
 

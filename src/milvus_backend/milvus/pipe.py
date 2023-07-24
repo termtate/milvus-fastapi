@@ -3,6 +3,7 @@ from towhee import ops, pipe
 from towhee.runtime.data_queue import DataQueue
 from typing import Callable, Sequence, Union, Optional
 from functools import lru_cache
+from milvus.types import SearchConfig
 
 # 文本嵌入模型
 text_embedding_model = ops.sentence_embedding.transformers(model_name='distiluse-base-multilingual-cased-v2')
@@ -36,32 +37,34 @@ def insert_pipe(
     )
 
 
+# @lru_cache(maxsize=20)
 def search_pipe(
     host: str, 
     port: Union[int, str], 
     collection_name: str, 
-    output_fields: Sequence[str],
+    output_fields: tuple[str],
     primary_field: str,
-    **kwargs,
-):
+    
+) -> Callable[[SearchConfig, str | Sequence[str]], DataQueue]:
     '''
     向milvus客户端中进行向量相似搜索
     '''
-    fields = tuple(output_fields)
-
     return (pipe
-        .input('query')
+        .input('kwargs', 'query')
         .map('query', 'vec', text_embedding_model)
-        .flat_map(
-            'vec',  
-            (primary_field, 'score') + tuple(_ for _ in fields if _ != primary_field),
-            ops.ann_search.milvus_client(
+        .map("kwargs", "fields", lambda kwargs: kwargs["output_fields"])
+        .map("kwargs", "client", lambda kwargs: ops.ann_search.milvus_client(
                 host=host,
                 port=port,
                 collection_name=collection_name,
-                output_fields=list(_ for _ in fields if _ != primary_field),
+                output_fields=list(_ for _ in output_fields if _ != primary_field),
                 **kwargs
             )
         )
-        .output('query', 'score', *fields)
+        .flat_map(
+            ('vec', 'client'),  
+            (primary_field, 'score') + tuple(_ for _ in output_fields if _ != primary_field),
+            lambda vec, client: client(vec)
+        )
+        .output('query', 'score', *output_fields)
     )
