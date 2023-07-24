@@ -1,1 +1,1 @@
-from schemas.patient import Patient, PatientQuery, PatientANNResp
+from schemas.patient import Patient, PatientQuery, PatientANNResp, PatientModifyResult

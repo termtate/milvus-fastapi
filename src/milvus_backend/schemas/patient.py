@@ -21,7 +21,7 @@ class Patient:
     id_card_number: str
     name: str
     hospitalize_num: str
-    case_number: int
+    case_number: str
     sex: Literal["男", "女"]
     age: str
     phone_number: str
@@ -35,9 +35,28 @@ class Patient:
 class PatientANNResp(Patient):
     query: str
     score: float
+
+
+class PatientModifyResult(BaseModel):
+    insert_count: int
+    delete_count: int
+    upsert_count: int
+    timestamp: int
+    succ_count: int
+    err_count: int
+    
+    class Config:
+        orm_mode = True
+    
+# class PatientDeleteResult(PatientModifyResult):
+#     # primary_keys: list[int]  # TODO
+#     succ_count: int
     
 
-# @dataclass
-# class PatientDelete
+# # @dataclass
+# class PatientInsertResult(PatientModifyResult):
+#     success_count: int
+    
+    
     
 

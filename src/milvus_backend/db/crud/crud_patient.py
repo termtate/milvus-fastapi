@@ -40,8 +40,11 @@ class CRUDPatient:
         )
 
         collection.flush()
-        
-        return r
+
+        # print(DataCollection(r).to_list())
+        return [
+            _["res"] for _ in r.to_list(kv_format=True) # type: ignore
+        ]
     
     def ann_search_patient(self, collection: Collection, query: str, limit: int):
         res = collection.ann_search(

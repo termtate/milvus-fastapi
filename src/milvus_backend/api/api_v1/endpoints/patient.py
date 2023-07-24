@@ -3,7 +3,9 @@ from fastapi import APIRouter, Depends, Query
 from api.deps import get_collection
 from milvus.client import Collection
 from db.crud import crud_patient
-from schemas import Patient, PatientQuery, PatientANNResp
+from schemas import Patient, PatientQuery, PatientANNResp, PatientModifyResult
+from towhee import DataCollection
+from pydantic import validate_model
 
 router = APIRouter()
 
@@ -43,26 +45,16 @@ def read_patient_by_fields(
         phone_number=phone_number
     ))
 
-@router.post("/")
+@router.post("/", response_model=list[PatientModifyResult])
 def create_patients(
     patients: list[Patient],
     collection: Collection = Depends(get_collection)
-): # TODO: 优化调用速度
+):
     return crud_patient.create(collection, *patients)
 
-@router.delete("/{patient_id}")
+@router.delete("/{patient_id}", response_model=PatientModifyResult)
 def delete_patient(
     patient_id: int,
     collection: Collection = Depends(get_collection)
 ):
     return crud_patient.delete_patients(collection, id=patient_id)
-
-@router.delete("/test/{patient_id}")
-def test(
-    patient_id: list[int],
-    # collection: Collection = Depends(get_collection)
-):
-    
-    return {
-        "s": patient_id
-    }

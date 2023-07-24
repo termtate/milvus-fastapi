@@ -151,7 +151,7 @@ class Collection:
         )
     
     def delete(self, id: int):
-        return self.collection.delete(f"id == {id}")
+        return self.collection.delete(f"id in [{id}]")
     
     
     def ann_insert(self, df: pd.DataFrame, embedding_field: str): # TODO: 其他输入类型

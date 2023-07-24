@@ -52,7 +52,6 @@ def search_pipe(
     return (pipe
         .input('kwargs', 'query')
         .map('query', 'vec', text_embedding_model)
-        .map("kwargs", "fields", lambda kwargs: kwargs["output_fields"])
         .map("kwargs", "client", lambda kwargs: ops.ann_search.milvus_client(
                 host=host,
                 port=port,

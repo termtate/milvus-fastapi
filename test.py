@@ -1,21 +1,8 @@
-from functools import cached_property
-from dataclasses import dataclass
+from towhee import pipe
 
-@dataclass
-class A:
-    a: int
+a = (pipe.input("a").output("a"))
+
+b = a(1)
+print(b.to_list(kv_format=True))
     
-    @cached_property
-    def b(self):
-        print(11)
-        return self.a + 1
-
-
-a = A(1)
-
-print(a.b)
-
-a.a = 2
-
-print(a.b)
 
