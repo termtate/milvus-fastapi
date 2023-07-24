@@ -32,7 +32,7 @@ def init_db(conn: MilvusConnection) -> None:
     })[["id", "id_card_number", "name", "hospitalize_num", "case_number", 
         "sex", "age", "phone_number", "seizure_evolution"]]
     
-    collection.ann_insert(df=df, embedding_field=settings.milvus.EMBEDDING_FIELD_NAME)
+    collection.ann_insert(df)
     
     
 

@@ -11,7 +11,10 @@ class Session:
         self._collection: Collection | None = None
     
     def get_collection(self):
-        self._collection = self.connection.get_collection(settings.milvus.COLLECTION_NAME)
+        self._collection = self.connection.get_collection(
+            settings.milvus.COLLECTION_NAME,
+            settings.milvus.EMBEDDING_FIELD_NAME
+        )
         
     @property
     def collection(self) -> Collection:

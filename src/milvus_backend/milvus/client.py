@@ -58,10 +58,11 @@ class MilvusConnection(AbstractContextManager):
     def __exit__(self, __exc_type, __exc_value, __traceback):
         self.disconnect()
         
-    def get_collection(self, name: str):
+    def get_collection(self, name: str, embedding_field: str):
         return Collection(
             self, 
-            _Collection(name=name) # type: ignore
+            _Collection(name=name), # type: ignore
+            embedding_field
         ) 
     
 
@@ -82,7 +83,7 @@ class MilvusConnection(AbstractContextManager):
         if index_params is not None:
             collection.create_index(**index_params)
         
-        return Collection(self, collection)
+        return Collection(self, collection, embedding_field)
     
     
 class Collection:
@@ -90,16 +91,32 @@ class Collection:
         self, 
         connection: "MilvusConnection",
         collection: _Collection,
+        embedding_field: str
     ) -> None:
         self.conn = connection
         self.collection = collection
+        self.embedding_field = embedding_field
+        
+        collection_schema = filter(
+            lambda field: (not field.is_primary or not field.auto_id)
+                and field.dtype != DataType.FLOAT_VECTOR,
+            self.collection.schema.fields,
+        )
+        
+        self._insert_pipe = insert_pipe(
+            self.conn.host, 
+            self.conn.port, 
+            self.collection.name,
+            tuple(_.name for _ in collection_schema),
+            self.embedding_field
+        )
         
         self._search_pipe = search_pipe(
             host=self.conn.host,
             port=self.conn.port,
             collection_name=self.collection.name,
             primary_field=self.primary_field,
-            output_fields=tuple(self.fields)
+            output_fields=tuple(self.fields())
         )
         
     def load(self):
@@ -122,10 +139,12 @@ class Collection:
             self.release()
     
     
-    @cached_property
-    def fields(self) -> list[str]:
+    
+    def fields(self, include_auto_id: bool = False) -> list[str]:
         return [
-            _.name for _ in self.collection.schema.fields if _.dtype != DataType.FLOAT_VECTOR
+            field.name for field in self.collection.schema.fields 
+            if field.dtype != DataType.FLOAT_VECTOR
+            and (include_auto_id and (not field.is_primary or not field.auto_id))
         ]
     
     @cached_property
@@ -143,7 +162,7 @@ class Collection:
             expr: 查询表达式，具体参见 https://milvus.io/docs/boolean.md
         '''
         if output_fields is None:
-            output_fields = self.fields
+            output_fields = self.fields()
         
         return self.collection.query(
             expr=expr,
@@ -154,33 +173,20 @@ class Collection:
         return self.collection.delete(f"id in [{id}]")
     
     
-    def ann_insert(self, df: pd.DataFrame, embedding_field: str): # TODO: 其他输入类型
+    def ann_insert(self, df: pd.DataFrame): # TODO: 其他输入类型
         '''
         插入dataframe中的数据
         args:
             data: dataframe. 表头名必须与collection字段名匹配
             embedding_field: 要进行词向量化的字段名，
         '''
-        collection_schema = filter(
-            lambda field: (not field.is_primary or not field.auto_id)
-                and field.dtype != DataType.FLOAT_VECTOR,
-            self.collection.schema.fields,
-        )
 
         fields = tuple(df.columns)
 
-        assert tuple(_.name for _ in collection_schema) == fields, \
+        assert tuple(self.fields(include_auto_id=True)) == fields, \
             "dataframe的字段名需要与milvus的collection的字段名的名称、数量、顺序一致"
 
-        assert embedding_field in fields
-
-        return insert_pipe(
-            self.conn.host, 
-            self.conn.port, 
-            self.collection.name,
-            fields,
-            embedding_field
-        )(df)
+        return self._insert_pipe(df)
     
     
     @overload

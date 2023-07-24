@@ -34,10 +34,7 @@ class CRUDPatient:
     def create(self, collection: Collection, *patients: Patient):
         df = pd.DataFrame(patients)
         
-        r = collection.ann_insert(
-            df,
-            embedding_field=settings.milvus.EMBEDDING_FIELD_NAME
-        )
+        r = collection.ann_insert(df)
 
         collection.flush()
 
