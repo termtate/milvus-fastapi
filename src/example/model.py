@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic.dataclasses import dataclass
 from typing import Literal
 
-
-class Patient(BaseModel):
+@dataclass
+class Patient:
     id: int
     id_card_number: str
     name: str

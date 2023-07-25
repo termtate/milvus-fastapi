@@ -1,7 +1,7 @@
+from typing import Literal
+
+from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
-from pydantic import BaseModel, validate_model
-from typing import Literal, TypedDict
-from pydantic import Field
 
 
 class PatientQuery(BaseModel):
@@ -47,15 +47,7 @@ class PatientModifyResult(BaseModel):
     
     class Config:
         orm_mode = True
-    
-# class PatientDeleteResult(PatientModifyResult):
-#     # primary_keys: list[int]  # TODO
-#     succ_count: int
-    
 
-# # @dataclass
-# class PatientInsertResult(PatientModifyResult):
-#     success_count: int
     
     
     

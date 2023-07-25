@@ -23,9 +23,3 @@ class Session:
         return self._collection
 
 session = Session()
-# session = MilvusConnection(
-#         host=settings.milvus.HOST,
-#         port=settings.milvus.PORT
-# )
-# session.connect()
-# collection = session.get_collection(settings.milvus.COLLECTION_NAME)

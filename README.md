@@ -10,8 +10,8 @@
 ## 运行
 在当前目录下运行cmd命令：
 1. `rye sync`
-2. 如果是第一次运行，输入 `rye run python src/milvus_backend/initial_data.py` 初始化数据
-3. `rye run python src/milvus_backend/pre_start.py`
-4. `rye run python src/milvus_backend/main.py`
+2. 如果是第一次运行，输入 `rye run python src/app/initial_data.py` 初始化数据
+3. `rye run python src/app/pre_start.py`
+4. `rye run python src/app/main.py`
    
 运行以后，在浏览器输入 http://127.0.0.1:8000/docs 打开api文档

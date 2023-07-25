@@ -1,7 +1,5 @@
-import secrets
-from pathlib import Path
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, HttpUrl, tools
+from pydantic import BaseSettings
 from pymilvus import FieldSchema, DataType
 from milvus.types import IndexParams
 

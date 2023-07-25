@@ -15,25 +15,6 @@ from pymilvus.exceptions import PrimaryKeyException
 logger = getLogger(__name__)
 
 
-def _cache(func: Callable):
-        last_param = None
-        last_result = None
-        
-        def wrapper(self, search_config):
-            nonlocal last_param, last_result
-            
-            if last_result is not None and last_param == search_config:
-                logger.info("search_pipe cache hits")
-                return last_result
-
-            result = func(self, search_config)
-            last_param = search_config
-            last_result = result
-            
-            return result
-        
-        return wrapper
-
 class MilvusConnection(AbstractContextManager):
     def __init__(
         self, 
@@ -151,11 +132,6 @@ class Collection:
                 fields
             )
         ]
-        # return [
-        #     field.name for field in self.collection.schema.fields 
-        #     if field.dtype != DataType.FLOAT_VECTOR
-        #     and (not field.is_primary or (not field.auto_id))
-        # ]
     
     @cached_property
     def primary_field(self) -> str:
