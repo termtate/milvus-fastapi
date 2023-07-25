@@ -6,33 +6,14 @@ from contextlib import contextmanager, AbstractContextManager
 from pymilvus.orm.schema import CollectionSchema
 import pandas as pd
 from towhee.runtime.data_queue import DataQueue
-from milvus.types import IndexParams, SearchConfig
+from app.milvus.types import IndexParams, SearchConfig
 from functools import cached_property
-from milvus.pipe import insert_pipe, search_pipe
+from app.milvus.pipe import insert_pipe, search_pipe
 from logging import getLogger
 from pymilvus.exceptions import PrimaryKeyException
 
 logger = getLogger(__name__)
 
-
-def _cache(func: Callable):
-        last_param = None
-        last_result = None
-        
-        def wrapper(self, search_config):
-            nonlocal last_param, last_result
-            
-            if last_result is not None and last_param == search_config:
-                logger.info("search_pipe cache hits")
-                return last_result
-
-            result = func(self, search_config)
-            last_param = search_config
-            last_result = result
-            
-            return result
-        
-        return wrapper
 
 class MilvusConnection(AbstractContextManager):
     def __init__(

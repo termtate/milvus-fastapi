@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic import AnyHttpUrl, BaseSettings, Field, HttpUrl, tools
 from pymilvus import FieldSchema, DataType
-from milvus.types import IndexParams
+from app.milvus.types import IndexParams
 
 
 class MilvusSettings(BaseSettings):

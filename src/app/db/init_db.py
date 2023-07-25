@@ -1,13 +1,9 @@
-from milvus.types import IndexParams
 import logging
-import schemas
-from core.config import settings
-from milvus.client import Collection, MilvusConnection
-from pymilvus import FieldSchema, DataType, CollectionSchema
-from pymilvus.orm.utility import has_collection
+from app.core.config import settings
+from app.milvus.client import Collection, MilvusConnection
+from pymilvus import CollectionSchema
 import pandas as pd
 
-from db import base  # noqa: F401
 
 
 logger = logging.getLogger(__name__)

@@ -2,9 +2,9 @@ from typing import Any, Generator
 
 from fastapi.security import OAuth2PasswordBearer
 
-from milvus.client import MilvusConnection, Collection
-from core.config import settings
-from db import session
+from app.milvus.client import MilvusConnection, Collection
+from app.core.config import settings
+from app.db import session
 
 
 def get_collection() -> Generator[Collection, Any, None]:

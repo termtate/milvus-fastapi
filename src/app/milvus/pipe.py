@@ -3,10 +3,10 @@ from towhee import ops, pipe
 from towhee.runtime.data_queue import DataQueue
 from typing import Callable, Sequence, Union, Optional
 from functools import lru_cache
-from milvus.types import SearchConfig
+from app.milvus.types import SearchConfig
 
 # 文本嵌入模型
-text_embedding_model = ops.sentence_embedding.transformers(model_name='distiluse-base-multilingual-cased-v2')
+text_embedding_model = ops.sentence_embedding.transformers(model_name='distiluse-base-multilingual-cased-v2') # type: ignore
 
 
 @lru_cache(maxsize=20)
@@ -27,7 +27,7 @@ def insert_pipe(
         .map(
             fields + ("vector", ), 
             'res', 
-            ops.ann_insert.milvus_client(
+            ops.ann_insert.milvus_client( # type: ignore
                 host=host,
                 port=port,
                 collection_name=collection_name
@@ -52,7 +52,7 @@ def search_pipe(
     return (pipe
         .input('kwargs', 'query')
         .map('query', 'vec', text_embedding_model)
-        .map("kwargs", "client", lambda kwargs: ops.ann_search.milvus_client(
+        .map("kwargs", "client", lambda kwargs: ops.ann_search.milvus_client( # type: ignore
                 host=host,
                 port=port,
                 collection_name=collection_name,
