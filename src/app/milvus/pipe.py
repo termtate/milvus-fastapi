@@ -3,7 +3,7 @@ from towhee import ops, pipe
 from towhee.runtime.data_queue import DataQueue
 from typing import Callable, Sequence, Union, Optional
 from functools import lru_cache
-from app.milvus.types import SearchConfig
+from milvus.types import SearchConfig
 
 # 文本嵌入模型
 text_embedding_model = ops.sentence_embedding.transformers(model_name='distiluse-base-multilingual-cased-v2') # type: ignore

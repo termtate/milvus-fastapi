@@ -6,9 +6,9 @@ from contextlib import contextmanager, AbstractContextManager
 from pymilvus.orm.schema import CollectionSchema
 import pandas as pd
 from towhee.runtime.data_queue import DataQueue
-from app.milvus.types import IndexParams, SearchConfig
+from milvus.types import IndexParams, SearchConfig
 from functools import cached_property
-from app.milvus.pipe import insert_pipe, search_pipe
+from milvus.pipe import insert_pipe, search_pipe
 from logging import getLogger
 from pymilvus.exceptions import PrimaryKeyException
 
@@ -132,11 +132,6 @@ class Collection:
                 fields
             )
         ]
-        # return [
-        #     field.name for field in self.collection.schema.fields 
-        #     if field.dtype != DataType.FLOAT_VECTOR
-        #     and (not field.is_primary or (not field.auto_id))
-        # ]
     
     @cached_property
     def primary_field(self) -> str:

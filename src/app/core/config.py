@@ -1,7 +1,7 @@
 
 from pydantic import BaseSettings
 from pymilvus import FieldSchema, DataType
-from app.milvus.types import IndexParams
+from milvus.types import IndexParams
 
 
 class MilvusSettings(BaseSettings):

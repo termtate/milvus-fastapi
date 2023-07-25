@@ -1,9 +1,9 @@
 from typing import Literal
 from fastapi import APIRouter, Depends
-from app.api.deps import get_collection
-from app.milvus.client import Collection
-from app.db.crud import crud_patient
-from app.schemas import Patient, PatientQuery, PatientANNResp, PatientModifyResult
+from api.deps import get_collection
+from milvus.client import Collection
+from db.crud import crud_patient
+from schemas import Patient, PatientQuery, PatientANNResp, PatientModifyResult
 
 router = APIRouter()
 

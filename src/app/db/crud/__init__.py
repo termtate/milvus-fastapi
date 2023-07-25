@@ -1,1 +1,1 @@
-from app.db.crud.crud_patient import crud_patient
+from db.crud.crud_patient import crud_patient

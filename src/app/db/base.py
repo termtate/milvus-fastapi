@@ -1,1 +1,1 @@
-from app.db.session import session
+from db.session import session

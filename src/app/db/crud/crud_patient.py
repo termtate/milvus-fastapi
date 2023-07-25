@@ -1,8 +1,8 @@
 from typing import Any
-from app.milvus.client import Collection
-from app.schemas import Patient, PatientQuery, PatientANNResp
+from milvus.client import Collection
+from schemas import Patient, PatientQuery, PatientANNResp
 import pandas as pd
-from app.core.config import settings
+from core.config import settings
 from towhee import DataCollection
 
 

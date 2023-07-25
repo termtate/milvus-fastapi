@@ -1,5 +1,5 @@
-from app.core.config import settings
-from app.milvus.client import MilvusConnection, Collection
+from core.config import settings
+from milvus.client import MilvusConnection, Collection
 from pymilvus.exceptions import ConnectionNotExistException
 
 class Session:
@@ -23,9 +23,3 @@ class Session:
         return self._collection
 
 session = Session()
-# session = MilvusConnection(
-#         host=settings.milvus.HOST,
-#         port=settings.milvus.PORT
-# )
-# session.connect()
-# collection = session.get_collection(settings.milvus.COLLECTION_NAME)

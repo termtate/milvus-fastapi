@@ -1,8 +1,8 @@
 import logging
 
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
-from app.milvus.client import MilvusConnection
-from app.core.config import settings
+from milvus.client import MilvusConnection
+from core.config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

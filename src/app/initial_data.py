@@ -1,8 +1,8 @@
 import logging
 
-from app.db.init_db import init_db
-from app.milvus.client import MilvusConnection
-from app.core.config import settings
+from db.init_db import init_db
+from milvus.client import MilvusConnection
+from core.config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

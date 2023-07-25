@@ -1,6 +1,6 @@
 import logging
-from app.core.config import settings
-from app.milvus.client import Collection, MilvusConnection
+from core.config import settings
+from milvus.client import Collection, MilvusConnection
 from pymilvus import CollectionSchema
 import pandas as pd
 
