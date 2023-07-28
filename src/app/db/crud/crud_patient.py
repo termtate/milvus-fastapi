@@ -42,11 +42,12 @@ class CRUDPatient:
             _["res"] for _ in r.to_list(kv_format=True) # type: ignore
         ]
     
-    def ann_search_patient(self, collection: Collection, query: str, limit: int):
+    def ann_search_patient(self, collection: Collection, query: str, field: str, limit: int):
         res = collection.ann_search(
             query=query,
             search_config= {
-                "param": settings.milvus.FIELD_INDEX_PARAMS["index_params"],
+                "anns_field": field,
+                "param": settings.milvus.VECTOR_FIELD_INDEX_PARAMS,
                 "limit": limit
             }
         )

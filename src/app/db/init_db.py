@@ -38,6 +38,5 @@ def create_collection(conn: MilvusConnection) -> Collection:
     return conn.create_collection(
         settings.milvus.COLLECTION_NAME,
         schema=schema,
-        index_params=settings.milvus.FIELD_INDEX_PARAMS,
-        embedding_field=settings.milvus.EMBEDDING_FIELD_NAME
+        vector_fields=settings.milvus.VECTOR_FIELDS,
     )

@@ -6,7 +6,7 @@ from contextlib import contextmanager, AbstractContextManager
 from pymilvus.orm.schema import CollectionSchema
 import pandas as pd
 from towhee.runtime.data_queue import DataQueue
-from milvus.types import IndexParams, SearchConfig
+from milvus.types import VectorField, SearchConfig
 from functools import cached_property
 from milvus.pipe import insert_pipe, search_pipe
 from logging import getLogger
@@ -51,21 +51,34 @@ class MilvusConnection(AbstractContextManager):
         self, 
         collection_name: str, 
         schema: CollectionSchema,
-        embedding_field: Sequence[str],
-        index_params: Optional[list[IndexParams]] = None
+        # embedding_field: Sequence[str],
+        vector_fields: Optional[list[VectorField]] = None
     ):
-        assert schema.fields[-1].dtype == DataType.FLOAT_VECTOR, "向量字段需要放在最后"
+        # assert schema.fields[-1].dtype == DataType.FLOAT_VECTOR, "向量字段需要放在最后"
         
         # 如果数据库有同名collection就丢弃
         if utility.has_collection(collection_name):
             utility.drop_collection(collection_name)
-
-        collection = _Collection(name=collection_name, schema=schema)
-        if index_params is not None:
-            for params in index_params:
-                collection.create_index(**params)
         
-        return Collection(self, collection, embedding_field)
+        if vector_fields is not None:
+        
+            vector_fields_name = [
+                param["field_name"] for param in vector_fields
+            ]
+            for name in vector_fields_name:
+                schema.add_field(field_name=f"vector_{name}", datatype=DataType.FLOAT_VECTOR, dim=768)
+            
+            collection = _Collection(name=collection_name, schema=schema)
+            
+            for params in vector_fields:
+                collection.create_index(**params)
+            
+            return Collection(self, collection, vector_fields_name)
+            
+        else:
+            collection = _Collection(name=collection_name, schema=schema)
+
+            return Collection(self, collection, [])
     
     
 class Collection:
@@ -135,6 +148,13 @@ class Collection:
         ]
     
     @cached_property
+    def vector_fields(self):
+        return [
+            field.name for field in self.collection.schema.fields 
+            if field.dtype == DataType.FLOAT_VECTOR
+        ]
+    
+    @cached_property
     def primary_field(self) -> str:
         primary_field = self.collection.schema.primary_field
         if primary_field is None:
@@ -195,7 +215,7 @@ class Collection:
         '''
         
         
-        if "output_fields" in search_config and tuple(search_config["output_fields"]) != self.fields:
+        if "output_fields" in search_config and tuple(search_config["output_fields"]) != self.fields(include_auto_id=True):
             return search_pipe(
                 host=self.conn.host,
                 port=self.conn.port,
