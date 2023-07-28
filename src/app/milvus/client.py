@@ -6,7 +6,7 @@ from contextlib import contextmanager, AbstractContextManager
 from pymilvus.orm.schema import CollectionSchema
 import pandas as pd
 from towhee.runtime.data_queue import DataQueue
-from milvus.types import VectorField, SearchConfig
+from milvus.types import SearchConfig
 from functools import cached_property
 from milvus.pipe import insert_pipe, search_pipe
 from logging import getLogger
@@ -39,11 +39,11 @@ class MilvusConnection(AbstractContextManager):
     def __exit__(self, __exc_type, __exc_value, __traceback):
         self.disconnect()
         
-    def get_collection(self, name: str, embedding_field: str):
+    def get_collection(self, name: str, embedding_fields: Sequence[str]):
         return Collection(
             self, 
-            _Collection(name=name), # type: ignore
-            embedding_field
+            _Collection(name=name),
+            embedding_fields
         ) 
     
 
@@ -52,7 +52,8 @@ class MilvusConnection(AbstractContextManager):
         collection_name: str, 
         schema: CollectionSchema,
         # embedding_field: Sequence[str],
-        vector_fields: Optional[list[VectorField]] = None
+        vector_fields: Optional[list[str]] = None,
+        index_params: Optional[dict[str, str]] = None
     ):
         # assert schema.fields[-1].dtype == DataType.FLOAT_VECTOR, "向量字段需要放在最后"
         
@@ -61,19 +62,15 @@ class MilvusConnection(AbstractContextManager):
             utility.drop_collection(collection_name)
         
         if vector_fields is not None:
-        
-            vector_fields_name = [
-                param["field_name"] for param in vector_fields
-            ]
-            for name in vector_fields_name:
+            for name in vector_fields:
                 schema.add_field(field_name=f"vector_{name}", datatype=DataType.FLOAT_VECTOR, dim=768)
             
             collection = _Collection(name=collection_name, schema=schema)
             
-            for params in vector_fields:
-                collection.create_index(**params)
+            for field in vector_fields:
+                collection.create_index(field_name=f"vector_{field}", index_params=index_params)
             
-            return Collection(self, collection, vector_fields_name)
+            return Collection(self, collection, vector_fields)
             
         else:
             collection = _Collection(name=collection_name, schema=schema)
@@ -90,20 +87,20 @@ class Collection:
     ) -> None:
         self.conn = connection
         self.collection = collection
-        self.embedding_fields = embedding_fields
+        # self.embedding_fields = embedding_fields
         
-        collection_schema = filter(
-            lambda field: (not field.is_primary or not field.auto_id)
-                and field.dtype != DataType.FLOAT_VECTOR,
-            self.collection.schema.fields,
-        )
+        # collection_schema = filter(
+        #     lambda field: (not field.is_primary or not field.auto_id)
+        #         and field.dtype != DataType.FLOAT_VECTOR,
+        #     self.collection.schema.fields,
+        # )
         
         self._insert_pipe = insert_pipe(
             self.conn.host, 
             self.conn.port, 
             self.collection.name,
-            tuple(_.name for _ in collection_schema),
-            tuple(self.embedding_fields)
+            # tuple(self.fields()),
+            tuple(embedding_fields)
         )
         
         self._search_pipe = search_pipe(
@@ -212,9 +209,7 @@ class Collection:
             query: 输入的查询，如果为多个，会返回多个对应的结果
             
             search_config: 查询设置，具体参见 https://milvus.io/docs/v2.0.x/search.md#Conduct-a-vector-search
-        '''
-        
-        
+        '''        
         if "output_fields" in search_config and tuple(search_config["output_fields"]) != self.fields(include_auto_id=True):
             return search_pipe(
                 host=self.conn.host,

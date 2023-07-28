@@ -13,7 +13,7 @@ class Session:
     def get_collection(self):
         self._collection = self.connection.get_collection(
             settings.milvus.COLLECTION_NAME,
-            settings.milvus.EMBEDDING_FIELD_NAME
+            settings.milvus.VECTOR_FIELDS
         )
         
     @property

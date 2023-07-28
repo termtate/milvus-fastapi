@@ -39,4 +39,5 @@ def create_collection(conn: MilvusConnection) -> Collection:
         settings.milvus.COLLECTION_NAME,
         schema=schema,
         vector_fields=settings.milvus.VECTOR_FIELDS,
+        index_params=settings.milvus.VECTOR_FIELD_INDEX_PARAMS
     )

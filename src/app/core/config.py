@@ -1,7 +1,6 @@
 
 from pydantic import BaseSettings
 from pymilvus import FieldSchema, DataType
-from milvus.types import VectorField
 
 
 class MilvusSettings(BaseSettings):
@@ -22,20 +21,16 @@ class MilvusSettings(BaseSettings):
         FieldSchema(name="seizure_evolution", dtype=DataType.VARCHAR, max_length=600),
     ]
     
-    EMBEDDING_FIELD_NAME = "seizure_evolution"
+    # EMBEDDING_FIELD_NAME = "seizure_evolution"
     
+    # https://milvus.io/docs/v2.0.x/build_index.md#Prepare-index-parameter
     VECTOR_FIELD_INDEX_PARAMS = {
         'metric_type': "L2", 
         'index_type': "FLAT",
     }
     
-    VECTOR_FIELDS: list[VectorField] = [
-        {
-            "field_name": "seizure_evolution",
-            
-            # https://milvus.io/docs/v2.0.x/build_index.md#Prepare-index-parameter
-            "index_params": VECTOR_FIELD_INDEX_PARAMS
-        },                                           
+    VECTOR_FIELDS: list[str] = [
+        "seizure_evolution",                                        
     ]
 
 

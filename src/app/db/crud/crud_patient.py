@@ -46,7 +46,7 @@ class CRUDPatient:
         res = collection.ann_search(
             query=query,
             search_config= {
-                "anns_field": field,
+                "anns_field": f"vector_{field}",
                 "param": settings.milvus.VECTOR_FIELD_INDEX_PARAMS,
                 "limit": limit
             }
