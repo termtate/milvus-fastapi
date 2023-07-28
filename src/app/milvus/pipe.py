@@ -9,23 +9,24 @@ from milvus.types import SearchConfig
 text_embedding_model = ops.sentence_embedding.transformers(model_name='distiluse-base-multilingual-cased-v2') # type: ignore
 
 
-@lru_cache(maxsize=20)
+# @lru_cache(maxsize=20)
 def insert_pipe(
     host: str, 
     port: Union[int, str], 
     collection_name: str, 
     fields: tuple[str, ...],
-    vector_field: str,
+    vector_fields: tuple[str, ...],
 ) -> Callable[[pd.DataFrame], DataQueue]:
     '''
     向指定milvus客户端插入数据
     '''
+    v_fields = tuple(f"v{field}" for field in vector_fields)
     return (pipe
         .input('df')
         .flat_map("df", fields, lambda df: df.values.tolist()) 
-        .map(vector_field, "vector", text_embedding_model)
+        .flat_map(vector_fields, v_fields, lambda fields: [text_embedding_model(field) for field in fields])
         .map(
-            fields + ("vector", ), 
+            fields + v_fields, 
             'res', 
             ops.ann_insert.milvus_client( # type: ignore
                 host=host,

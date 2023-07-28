@@ -1,9 +1,7 @@
 from typing import Any, Generator
 
-from fastapi.security import OAuth2PasswordBearer
 
-from milvus.client import MilvusConnection, Collection
-from core.config import settings
+from milvus.client import Collection
 from db import session
 
 

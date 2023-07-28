@@ -51,8 +51,8 @@ class MilvusConnection(AbstractContextManager):
         self, 
         collection_name: str, 
         schema: CollectionSchema,
-        embedding_field: str,
-        index_params: Optional[IndexParams] = None
+        embedding_field: Sequence[str],
+        index_params: Optional[list[IndexParams]] = None
     ):
         assert schema.fields[-1].dtype == DataType.FLOAT_VECTOR, "向量字段需要放在最后"
         
@@ -62,7 +62,8 @@ class MilvusConnection(AbstractContextManager):
 
         collection = _Collection(name=collection_name, schema=schema)
         if index_params is not None:
-            collection.create_index(**index_params)
+            for params in index_params:
+                collection.create_index(**params)
         
         return Collection(self, collection, embedding_field)
     
@@ -72,11 +73,11 @@ class Collection:
         self, 
         connection: "MilvusConnection",
         collection: _Collection,
-        embedding_field: str
+        embedding_fields: Sequence[str]
     ) -> None:
         self.conn = connection
         self.collection = collection
-        self.embedding_field = embedding_field
+        self.embedding_fields = embedding_fields
         
         collection_schema = filter(
             lambda field: (not field.is_primary or not field.auto_id)
@@ -89,7 +90,7 @@ class Collection:
             self.conn.port, 
             self.collection.name,
             tuple(_.name for _ in collection_schema),
-            self.embedding_field
+            tuple(self.embedding_fields)
         )
         
         self._search_pipe = search_pipe(
@@ -176,14 +177,14 @@ class Collection:
     
     
     @overload
-    def ann_search(self, query: str, search_config: Optional[SearchConfig]) -> DataQueue: ...
+    def ann_search(self, query: str, search_config: SearchConfig) -> DataQueue: ...
     @overload
-    def ann_search(self, query: Sequence[str], search_config: Optional[SearchConfig]) -> List[DataQueue]: ...
+    def ann_search(self, query: Sequence[str], search_config: SearchConfig) -> List[DataQueue]: ...
     
     def ann_search(
         self, 
         query: Union[str, Sequence[str]],
-        search_config: Optional[SearchConfig] = None
+        search_config: SearchConfig
     ) -> Union[DataQueue, List[DataQueue]]:
         '''
         执行query的向量相似度查询
@@ -192,18 +193,18 @@ class Collection:
             
             search_config: 查询设置，具体参见 https://milvus.io/docs/v2.0.x/search.md#Conduct-a-vector-search
         '''
-        config: SearchConfig = search_config if search_config is not None else {}
         
-        if "output_fields" in config and tuple(config["output_fields"]) != self.fields:
+        
+        if "output_fields" in search_config and tuple(search_config["output_fields"]) != self.fields:
             return search_pipe(
                 host=self.conn.host,
                 port=self.conn.port,
                 collection_name=self.collection.name,
                 primary_field=self.primary_field,
-                output_fields=tuple(config["output_fields"])
-            )(config, query)
+                output_fields=tuple(search_config["output_fields"])
+            )(search_config, query)
             
-        return self._search_pipe(config, query)
+        return self._search_pipe(search_config, query)
 
 
 
