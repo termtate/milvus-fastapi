@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 def init() -> None:
     with MilvusConnection(settings.milvus.HOST, settings.milvus.PORT) as conn:
-        init_db(conn=conn)
+        init_db(conn=conn)  
         
         collection = conn.get_collection(
             settings.milvus.COLLECTION_NAME,
-            settings.milvus.EMBEDDING_FIELD_NAME
+            settings.milvus.VECTOR_FIELDS
         )
         with collection.load_data():
             logger.info(f"entities number: {collection.collection.num_entities}")

@@ -20,7 +20,7 @@ wait_seconds = 1
 def init() -> None:
     try:
         with MilvusConnection(settings.milvus.HOST, settings.milvus.PORT) as conn:
-            collection = conn.get_collection(settings.milvus.COLLECTION_NAME, settings.milvus.EMBEDDING_FIELD_NAME)
+            collection = conn.get_collection(settings.milvus.COLLECTION_NAME, settings.milvus.VECTOR_FIELDS)
             with collection.load_data():
                 logger.info(f"entities number: {collection.collection.num_entities}")
 
