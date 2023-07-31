@@ -67,6 +67,9 @@ class CRUDPatient:
     ):
         return collection.delete(*id)
     
+    def delete_all(self, collection: Collection):
+        return 
+    
     def update_patient_field(
         self, 
         collection: Collection, 
@@ -83,6 +86,7 @@ class CRUDPatient:
         
         
         patient = PatientWithVector.parse_obj(patients[0])
+        
         assert field_name in patient.__fields__
         
         collection.delete(patient.id)
