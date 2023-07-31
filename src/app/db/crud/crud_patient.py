@@ -1,9 +1,10 @@
 from typing import Any
 from milvus.client import Collection
-from schemas import Patient, PatientQuery, PatientANNResp
+from schemas import Patient, PatientQuery, PatientANNResp, PatientWithVector
 import pandas as pd
 from core.config import settings
 from towhee import DataCollection
+from pymilvus.exceptions import PrimaryKeyException
 
 
 
@@ -65,6 +66,37 @@ class CRUDPatient:
         *id: int
     ):
         return collection.delete(*id)
+    
+    def update_patient_field(
+        self, 
+        collection: Collection, 
+        patient_id: int, 
+        field_name: str, 
+        value: Any
+    ):
+        patients = collection.query(
+            f"id == {patient_id}",
+            output_fields=collection.fields(include_vector_fields=True)
+        )
+        if len(patients) == 0:
+            raise PrimaryKeyException(message="id not exist")
+        
+        
+        patient = PatientWithVector.parse_obj(patients[0])
+        assert field_name in patient.__fields__
+        
+        collection.delete(patient.id)
+        
+        patient = patient.copy(
+            update={
+                field_name: value
+            }
+        )
+        return collection.insert(list(patient.dict().values()))
+        
+        
+        
+        
         
         
 crud_patient = CRUDPatient()

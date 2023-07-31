@@ -56,6 +56,8 @@ class Patient(BaseModel):
     scalp_eeg: str
     precipitating_factor: str
 
+class PatientWithVector(Patient):
+    vector_seizure_evolution: list[float]
 
 class PatientANNResp(Patient):
     query: str

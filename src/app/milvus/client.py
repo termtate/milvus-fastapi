@@ -132,12 +132,12 @@ class Collection:
     
     
     
-    def fields(self, include_auto_id: bool = False) -> list[str]:
+    def fields(self, include_auto_id: bool = False, include_vector_fields: bool = False) -> list[str]:
         fields: list[FieldSchema] = self.collection.schema.fields 
         return [
             _.name for _ in filter(
                 lambda field: not(
-                    field.dtype == DataType.FLOAT_VECTOR
+                    (field.dtype == DataType.FLOAT_VECTOR and not include_vector_fields)
                     or (field.is_primary and (field.auto_id and include_auto_id))
                 ),
                 fields
@@ -159,7 +159,7 @@ class Collection:
         return primary_field.name
         
     
-    def query(self, expr: str, output_fields: Sequence[str] | None = None): # TODO: 防止注入
+    def query(self, expr: str, output_fields: Sequence[str] | None = None) -> list[dict]: # TODO: 防止注入
         '''
         进行标量查询
         args:
@@ -191,6 +191,10 @@ class Collection:
             "dataframe的字段名需要与milvus的collection的字段名的名称、数量、顺序一致"
 
         return self._insert_pipe(df)
+    
+    
+    def insert(self, *data: list):
+        return self.collection.insert(list(zip(*data)))
     
     
     @overload

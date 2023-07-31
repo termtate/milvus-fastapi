@@ -71,3 +71,18 @@ def delete_patient(
     collection: Collection = Depends(get_collection)
 ):
     return crud_patient.delete_patients(collection, patient_id)
+
+
+@router.put("/{patient_id}", response_model=PatientModifyResult)
+def update_patient(
+    patient_id: int,
+    field_name: str,
+    value: str,
+    collection: Collection = Depends(get_collection)
+):
+    return crud_patient.update_patient_field(
+        collection, 
+        patient_id=patient_id, 
+        field_name=field_name, 
+        value=value
+    )
