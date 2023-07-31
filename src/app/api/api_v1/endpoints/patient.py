@@ -76,7 +76,6 @@ def delete_patient(
 def delete_all_patients(
     collection: Collection = Depends(get_collection)
 ):
-    print(1111)
     patients = collection.query("id >= 0")
     ids = [_["id"] for _ in patients]
     
