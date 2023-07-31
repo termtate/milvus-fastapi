@@ -1,8 +1,9 @@
-from typing import Literal
+from typing import Literal, Any, TypeAlias
 
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 from pydantic.dataclasses import dataclass
-
+from core.config import settings
+from pymilvus import DataType
 
 class PatientQuery(BaseModel):
     id_card_number: str | None = None
@@ -15,23 +16,47 @@ class PatientQuery(BaseModel):
     # seizure_evolution: str | None = None
 
 
-@dataclass
-class Patient:
+# @dataclass
+# class Patient:
+#     id: int
+#     id_card_number: str
+#     name: str
+#     hospitalize_num: str
+#     case_number: str
+#     sex: Literal["男", "女"]
+#     age: str
+#     phone_number: str
+#     seizure_evolution: str
+
+#     class Config:
+#         orm_mode = True
+
+class Patient(BaseModel):
     id: int
     id_card_number: str
     name: str
     hospitalize_num: str
     case_number: str
-    sex: Literal["男", "女"]
+    sex: str
     age: str
     phone_number: str
     seizure_evolution: str
+    seizure_duration: str
+    seizure_freq: str
+    maternal_pregnancy_age: str
+    pregnancy_num: str
+    birth_weight: str
+    head_c: str
+    blood_urine_screening: str
+    copper_cyanin: str
+    csf: str
+    genetic_test: str
+    head_ct: str
+    head_mri: str
+    scalp_eeg: str
+    precipitating_factor: str
 
-    class Config:
-        orm_mode = True
 
-
-@dataclass
 class PatientANNResp(Patient):
     query: str
     score: float

@@ -32,7 +32,7 @@ class CRUDPatient:
         )
     
     def create(self, collection: Collection, *patients: Patient):
-        df = pd.DataFrame(patients)
+        df = pd.DataFrame([_.dict() for _ in patients])
         
         r = collection.ann_insert(df)
 

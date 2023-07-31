@@ -9,12 +9,14 @@ from core.config import settings
 
 router = APIRouter()
 
-vector_fields = Enum("VectorField", {_: _ for _ in settings.milvus.VECTOR_FIELDS}, type=str)
+class VectorFields(str, Enum):
+    seizure_evolution = "seizure_evolution"
+# vector_fields = Enum("VectorField", {_: _ for _ in settings.milvus.VECTOR_FIELDS}, type=str)
 
 @router.get("/ann_search", response_model=list[PatientANNResp])
 def ann_search_patients(
     query: str,
-    field: vector_fields,
+    field: VectorFields,
     limit: int = 10,
     collection: Collection = Depends(get_collection)
 ): 
