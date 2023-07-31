@@ -176,6 +176,11 @@ class Collection:
     def delete(self, *id: int):
         return self.collection.delete(f"id in [{', '.join(str(_) for _ in id)}]")
     
+    # def drop_collection(self):
+    #     self.release()
+    #     self.collection.drop()
+    #     return 
+    
     
     def ann_insert(self, df: pd.DataFrame): # TODO: 其他输入类型
         '''
