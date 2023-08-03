@@ -43,7 +43,7 @@ class MilvusConnection(AbstractContextManager):
         return Collection(
             self, 
             _Collection(name=name),
-            embedding_fields
+            [_Collection(name=field) for field in embedding_fields]
         ) 
     
 
@@ -61,21 +61,44 @@ class MilvusConnection(AbstractContextManager):
         if utility.has_collection(collection_name):
             utility.drop_collection(collection_name)
         
+        vector_collections: list[_Collection] = []
+        
+        
         if vector_fields is not None:
             for name in vector_fields:
-                schema.add_field(field_name=f"vector_{name}", datatype=DataType.FLOAT_VECTOR, dim=768)
+                vector_schema = [
+                    FieldSchema(
+                        name="id",
+                        dtype=DataType.INT64,
+                        is_primary=True,
+                        auto_id=True
+                    ),
+                    FieldSchema(
+                        name="pid",
+                        dtype=DataType.INT64,
+                    ),
+                    FieldSchema(
+                        name="vector",
+                        dtype=DataType.FLOAT_VECTOR,
+                        dim=768
+                    )
+                ]
+                collection_schema = CollectionSchema(
+                    fields=vector_schema,
+                    description=""
+                )
+                coll = _Collection(name, collection_schema)
+                coll.create_index(field_name="vector", index_params=index_params)
+                vector_collections.append(coll)
             
-            collection = _Collection(name=collection_name, schema=schema)
+            # collection = _Collection(name=collection_name, schema=schema)
             
-            for field in vector_fields:
-                collection.create_index(field_name=f"vector_{field}", index_params=index_params)
+            # return Collection(self, collection, vector_fields)
             
-            return Collection(self, collection, vector_fields)
-            
-        else:
-            collection = _Collection(name=collection_name, schema=schema)
 
-            return Collection(self, collection, [])
+        collection = _Collection(name=collection_name, schema=schema)
+
+        return Collection(self, collection, vector_collections)
     
     
 class Collection:
@@ -83,7 +106,7 @@ class Collection:
         self, 
         connection: "MilvusConnection",
         collection: _Collection,
-        embedding_fields: Sequence[str]
+        vector_collections: Sequence[_Collection]
     ) -> None:
         self.conn = connection
         self.collection = collection
@@ -110,6 +133,8 @@ class Collection:
             primary_field=self.primary_field,
             output_fields=tuple(self.fields())
         )
+    
+    # def _init_vector
         
     def load(self):
         self.collection.load()
