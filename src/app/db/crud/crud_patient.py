@@ -1,6 +1,6 @@
 from typing import Any
 from milvus.client import Collection
-from schemas import Patient, PatientQuery, PatientANNResp, PatientWithVector
+from schemas import Patient, PatientQuery, PatientANNResp, SearchResponse
 import pandas as pd
 from core.config import settings
 from towhee import DataCollection
@@ -18,18 +18,11 @@ class CRUDPatient:
         self,
         collection: Collection, 
         *, 
-        patient: PatientQuery,
+        field: str,
+        value: Any
     ) -> list[dict[str, Any]]:
-        res = []
-        for k, v in patient.dict().items():
-            if v is not None:
-                if isinstance(v, str):
-                    v = f'"{v}"'
-                res.append(f"{k} == {v}")
-        
-
         return collection.query(
-            expr=" and ".join(res)
+            expr=f"{field} == {value!r}"
         )
     
     def create(self, collection: Collection, *patients: Patient):
@@ -39,26 +32,22 @@ class CRUDPatient:
 
         collection.flush()
 
-        return [
-            _["res"] for _ in r.to_list(kv_format=True) # type: ignore
-        ]
+        return r
     
-    def ann_search_patient(self, collection: Collection, query: str, field: str, limit: int):
-        res = collection.ann_search(
-            query=query,
-            search_config= {
-                "anns_field": f"vector_{field}",
-                "param": settings.milvus.VECTOR_FIELD_INDEX_PARAMS,
-                "limit": limit
-            }
-        )
-        
-        col = DataCollection(res).to_dict()
-        return [
-            PatientANNResp(**_) for _ in [
-                dict(zip(col["schema"], row)) for row in col["iterable"]
-            ]
-        ]
+    def ann_search_patient(self, collection: Collection, query: str, field: str, limit: int, offset: int):
+        return {
+            "data": collection.ann_search(
+                query=query,
+                search_config={
+                    "anns_field": field,
+                    "param": settings.milvus.VECTOR_FIELD_INDEX_PARAMS,
+                    "limit": limit,
+                    "offset": offset
+                },
+            ),
+            "limit": limit,
+            "offset": offset
+        }
     
     def delete_patients(
         self, 
@@ -68,7 +57,7 @@ class CRUDPatient:
         return collection.delete(*id)
     
     def delete_all(self, collection: Collection):
-        return 
+        pass
     
     def update_patient_field(
         self, 
@@ -77,26 +66,7 @@ class CRUDPatient:
         field_name: str, 
         value: Any
     ):
-        patients = collection.query(
-            f"id == {patient_id}",
-            output_fields=collection.fields(include_vector_fields=True)
-        )
-        if len(patients) == 0:
-            raise PrimaryKeyException(message="id not exist")
-        
-        
-        patient = PatientWithVector.parse_obj(patients[0])
-        
-        assert field_name in patient.__fields__
-        
-        collection.delete(patient.id)
-        
-        patient = patient.copy(
-            update={
-                field_name: value
-            }
-        )
-        return collection.insert(list(patient.dict().values()))
+        return collection.update(id=patient_id, field=field_name, value=value)
         
         
         

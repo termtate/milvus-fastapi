@@ -43,7 +43,7 @@ class MilvusSettings(BaseSettings):
     
     VECTOR_FIELDS: list[str] = [
         "seizure_evolution",   
-        # "precipitating_factor"                                     
+        "precipitating_factor"                                     
     ]
 
 

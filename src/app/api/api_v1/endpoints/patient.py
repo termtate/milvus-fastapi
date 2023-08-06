@@ -1,9 +1,10 @@
-from typing import Literal
+from pprint import pprint
+from typing import Any, Literal
 from fastapi import APIRouter, Depends
 from api.deps import get_collection
 from milvus.client import Collection
 from db.crud import crud_patient
-from schemas import Patient, PatientQuery, PatientANNResp, PatientModifyResult
+from schemas import Patient, PatientModifyResult, SearchResponse
 from enum import Enum
 from core.config import settings
 
@@ -11,16 +12,20 @@ router = APIRouter()
 
 class VectorFields(str, Enum):
     seizure_evolution = "seizure_evolution"
+    precipitating_factor = "precipitating_factor"  
 # vector_fields = Enum("VectorField", {_: _ for _ in settings.milvus.VECTOR_FIELDS}, type=str)
 
-@router.get("/ann_search", response_model=list[PatientANNResp])
+@router.get("/ann_search", response_model=SearchResponse)
 def ann_search_patients(
     query: str,
     field: VectorFields,
     limit: int = 10,
+    offset: int = 0,
     collection: Collection = Depends(get_collection)
 ): 
-    return crud_patient.ann_search_patient(collection, query=query, field=field.name, limit=limit)
+    return crud_patient.ann_search_patient(
+        collection, query=query, field=field.name, limit=limit, offset=offset
+    )
 
 @router.get("/{patient_id}", response_model=list[Patient])
 def read_patients(patient_id: int, collection: Collection = Depends(get_collection)):
@@ -28,24 +33,11 @@ def read_patients(patient_id: int, collection: Collection = Depends(get_collecti
 
 @router.get("/", response_model=list[Patient])
 def read_patients_by_fields(
-    id_card_number: str | None = None,
-    name: str | None = None,
-    hospitalize_num: str | None = None,
-    case_number: int | None = None,
-    sex: Literal["男", "女"] | None = None,
-    age: str | None = None,
-    phone_number: str | None = None,
+    field: str,
+    value: Any,
     collection: Collection = Depends(get_collection)
 ):
-    return crud_patient.get_patient_by_fields(collection, patient=PatientQuery(
-        id_card_number=id_card_number,
-        name=name,
-        hospitalize_num=hospitalize_num,
-        case_number=case_number,
-        sex=sex,
-        age=age,
-        phone_number=phone_number
-    ))
+    return crud_patient.get_patient_by_fields(collection, field=field, value=value)
 
 
 @router.post("/batch", response_model=PatientModifyResult)
@@ -58,7 +50,7 @@ def delete_patients(
     '''
     return crud_patient.delete_patients(collection, *patients_id)
 
-@router.post("/", response_model=list[PatientModifyResult])
+@router.post("/", response_model=PatientModifyResult)
 def create_patients(
     patients: list[Patient],
     collection: Collection = Depends(get_collection)

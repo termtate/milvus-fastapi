@@ -56,6 +56,14 @@ class Patient(BaseModel):
     scalp_eeg: str
     precipitating_factor: str
 
+
+class SearchResponse(BaseModel):
+    data: list[Patient]
+    limit: int
+    offset: int
+    
+    
+
 class PatientWithVector(Patient):
     vector_seizure_evolution: list[float]
 
