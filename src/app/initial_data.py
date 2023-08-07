@@ -13,8 +13,8 @@ def init() -> None:
         init_db(conn=conn)  
         
         collection = conn.get_collection(
-            settings.milvus.COLLECTION_NAME,
-            settings.milvus.VECTOR_FIELDS
+            settings.milvus.COLLECTION_NAME_1,
+            settings.milvus.VECTOR_FIELDS_1
         )
         with collection.load_data():
             logger.info(f"entities number: {collection.collection.num_entities}")

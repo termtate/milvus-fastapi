@@ -155,7 +155,7 @@ class Collection:
             self.release()
     
     
-    # @cache
+    @cache
     def fields(self, include_auto_id: bool = False) -> list[str]:
         fields: list[FieldSchema] = self.collection.schema.fields 
 
@@ -244,7 +244,7 @@ class Collection:
     
     def _insert_df(self, df):
         fields = tuple(df.columns)
-        # print(self.fields())
+    
         assert tuple(self.fields()) == fields, \
             "dataframe的字段名需要与milvus的collection的字段名的名称、数量、顺序一致"
         
@@ -259,6 +259,7 @@ class Collection:
                 [_.to_list() for _ in insert_data],
             )
         df["unused"] = df.apply(lambda _: [0], axis=1)
+        # print(df["symptomatic_epilepsy"])
         return self.collection.insert(
             data=df
         )
@@ -271,7 +272,7 @@ class Collection:
         self, 
         query: str,
         search_config: SearchConfig
-    ) -> list:
+    ) -> list[dict]:
         '''
         执行query的向量相似度查询
         args:
@@ -279,14 +280,6 @@ class Collection:
             
             search_config: 查询设置，具体参见 https://milvus.io/docs/v2.0.x/search.md#Conduct-a-vector-search
         '''        
-        # if "output_fields" in search_config and tuple(search_config["output_fields"]) != self.fields(include_auto_id=True):
-        #     return search_pipe(
-        #         host=self.conn.host,
-        #         port=self.conn.port,
-        #         collection_name=self.collection.name,
-        #         primary_field=self.primary_field,
-        #         output_fields=tuple(search_config["output_fields"])
-        #     )(search_config, query)
         data = text_embedding(query)
         vector_field = search_config["anns_field"]
 
@@ -315,7 +308,6 @@ class Collection:
             e.entity.get("pid"): e.distance
             for e in res[0]
         }
-        # print(pids)
 
         return sorted(
             self.collection.query(
@@ -326,14 +318,7 @@ class Collection:
             ),
             key=lambda i: pids[i[self.primary_field]]
         )
-        
-        
-        # self.collection.search(
-        #     data=[data.tolist()],
-        #     **search_config
-        # )
-        
-        # return self._search_pipe(search_config, query)
+
 
 
 

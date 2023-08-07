@@ -1,11 +1,11 @@
 from typing import Any, Generator
 
 
-from milvus.client import Collection
+from db.proxy import CollectionProxy
 from db import session
 
 
-def get_collection() -> Generator[Collection, Any, None]:
+def get_collection() -> Generator[CollectionProxy, Any, None]:
     yield session.collection
     
 
