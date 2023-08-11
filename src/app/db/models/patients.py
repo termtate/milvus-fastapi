@@ -1,4 +1,7 @@
 from pymilvus import CollectionSchema, DataType, FieldSchema
+from db.models.table import Table
+from core.config import settings
+from pymilvus import utility
 
 
 fields: list[FieldSchema] = [
@@ -11,14 +14,14 @@ fields: list[FieldSchema] = [
     FieldSchema(name="sex", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="age", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="phone_number", dtype=DataType.VARCHAR, max_length=1000),
-    FieldSchema(name="seizure_evolution", dtype=DataType.VARCHAR, max_length=600),
+    FieldSchema(name="seizure_evolution", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="seizure_duration", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="seizure_freq", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="maternal_pregnancy_age", dtype=DataType.VARCHAR, max_length=1000),
-    FieldSchema(name="pregnancy_num", dtype=DataType.VARCHAR, max_length=10),
+    FieldSchema(name="pregnancy_num", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="birth_weight", dtype=DataType.VARCHAR, max_length=1000),
-    FieldSchema(name="head_c", dtype=DataType.VARCHAR, max_length=15),
-    FieldSchema(name="blood_urine_screening", dtype=DataType.VARCHAR, max_length=30),
+    FieldSchema(name="head_c", dtype=DataType.VARCHAR, max_length=1000),
+    FieldSchema(name="blood_urine_screening", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="copper_cyanin", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="csf", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="genetic_test", dtype=DataType.VARCHAR, max_length=1000),
@@ -63,26 +66,6 @@ fields: list[FieldSchema] = [
     FieldSchema(name="has_neonatal_convulsion", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="adhd", dtype=DataType.VARCHAR, max_length=1000),
     FieldSchema(name="has_severe_jaundice", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="feeding_difficulties", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="emotion_or_feeling", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="epilepsy_syndromes_no_specifically_related_to_age", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="ketogenic_diet", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="stained_amniotic_fluid", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="blood_transfusion_history", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="trauma_history", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="focal_secondary_bilateral_tonic_clonic_seizures", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="is_parents_consanguineous_married", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="fall", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="has_birth_asphyxia", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="convulsion_history", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="growth_regression", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="high_psychological_pressure", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="vomit", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="accompanying_fever", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="delivery_mode", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="diarrhea", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="tic", dtype=DataType.VARCHAR, max_length=1000),
-    # FieldSchema(name="autism", dtype=DataType.VARCHAR, max_length=1000),
 ]
 
 schema = CollectionSchema(fields=fields, description='')

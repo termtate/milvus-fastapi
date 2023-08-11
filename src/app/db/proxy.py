@@ -4,6 +4,7 @@ import pandas as pd
 from milvus.types import SearchConfig
 from milvus.client import Collection
 from schemas import Patient, Patient1, Patient2
+from db.models.table import Table
 
 class CollectionProxy:
     def __init__(self, collection1: Collection, collection2: Collection):
