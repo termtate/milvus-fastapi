@@ -156,14 +156,14 @@ class Collection:
     
     
     @cache
-    def fields(self, include_auto_id: bool = False) -> list[str]:
+    def fields(self, *, include_auto_id: bool = False) -> list[str]:
         fields: list[FieldSchema] = self.collection.schema.fields 
 
         return [
             _.name for _ in filter(
                 lambda field: not(
                     # (field.name in self.vector_fields and not include_vector_fields) or
-                    (field.is_primary and (field.auto_id and include_auto_id))
+                    (field.is_primary and (field.auto_id and not include_auto_id))
                     or field.name == "unused"
                 ),
                 fields
@@ -244,25 +244,29 @@ class Collection:
     
     def _insert_df(self, df):
         fields = tuple(df.columns)
-    
+
+        # pprint(tuple(self.fields()))
+        # pprint(fields)
         assert tuple(self.fields()) == fields, \
             "dataframe的字段名需要与milvus的collection的字段名的名称、数量、顺序一致"
+            
+        df["unused"] = df.apply(lambda _: [0], axis=1)
+        
+        res = self.collection.insert(
+            data=df
+        )
+        
+        
         
         for name, collection in self.vector_collections.items():
             vector_column = df.apply(lambda x: text_embedding(x[name]), axis=1)
             insert_data = [
-                df[self.primary_field],
-                vector_column,
+                list(res.primary_keys),
+                vector_column.to_list(),
             ]
-            
-            collection.insert(
-                [_.to_list() for _ in insert_data],
-            )
-        df["unused"] = df.apply(lambda _: [0], axis=1)
-        # print(df["symptomatic_epilepsy"])
-        return self.collection.insert(
-            data=df
-        )
+            collection.insert(insert_data)
+
+        return res
     
     
     def insert(self, *data: list):

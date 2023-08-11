@@ -4,6 +4,11 @@ from api.api_v1.api import api_router
 from core.config import settings
 from contextlib import asynccontextmanager
 from db.session import session
+from pymilvus import utility
+from initial_data import main
+
+if not utility.has_collection(settings.milvus.COLLECTION_NAME_1) or not utility.has_collection(settings.milvus.COLLECTION_NAME_2):
+    main()
 
 
 

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from api.deps import get_collection
 from db.proxy import CollectionProxy
 from db.crud import crud_patient
-from schemas import Patient, PatientModifyResult, SearchResponse
+from schemas import Patient, PatientModifyResult, SearchResponse, PatientCreate
 from enum import Enum
 from core.config import settings
 
@@ -53,7 +53,7 @@ def delete_patients(
 
 @router.post("/", response_model=PatientModifyResult)
 def create_patients(
-    patients: list[Patient],
+    patients: list[PatientCreate],
     collection: CollectionProxy = Depends(get_collection)
 ):
     

@@ -33,11 +33,7 @@ class CollectionProxy:
             p1 = {}
             p2 = {}
             for name in p:
-                if name == self.collection1.primary_field:
-                    p1[name] = p[name]
-                    p2[name] = p[name]
-                    
-                elif name in p1_fields:
+                if name in p1_fields:
                     p1[name] = p[name]
                 else:
                     p2[name] = p[name]
@@ -48,7 +44,7 @@ class CollectionProxy:
     
     def concat(self, p1: list[dict], p2: list[dict]) -> list[dict]:
         p1.sort(key=lambda i: i[self.collection1.primary_field])
-        p2.sort(key=lambda i: i[self.collection1.primary_field])
+        p2.sort(key=lambda i: i[self.collection2.primary_field])
         
         res = []
         for a, b in zip(p1, p2):
@@ -64,7 +60,7 @@ class CollectionProxy:
         ids = [_[self.collection1.primary_field] for _ in data]
 
         if from_p1:
-            other = self.collection2.query(f"{self.collection1.primary_field} in {ids}")
+            other = self.collection2.query(f"{self.collection2.primary_field} in {ids}")
         else:
             other = self.collection1.query(f"{self.collection1.primary_field} in {ids}")
 
@@ -74,7 +70,7 @@ class CollectionProxy:
     def query(self, field: str, value: Any):
         if field == self.collection1.primary_field:
             a = self.collection1.query(f"{field} == {value}")
-            b = self.collection2.query(f"{field} == {value}")
+            b = self.collection2.query(f"{self.collection2.primary_field} == {value}")
             return self.concat(a, b)
         
         if self.from_p1(field):
@@ -88,7 +84,10 @@ class CollectionProxy:
         p1s, p2s = self.dispatch(data)
 
         res = self.collection1.ann_insert(pd.DataFrame(p1s))
-        self.collection2.ann_insert(pd.DataFrame(p2s))
+
+        df = pd.DataFrame(p2s)
+        df.insert(0, self.collection2.primary_field, list(res.primary_keys))
+        self.collection2.ann_insert(df)
         return res
     
     def ann_search(self, query: str, search_config: SearchConfig):

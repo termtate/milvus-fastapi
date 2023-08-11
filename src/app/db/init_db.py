@@ -5,7 +5,7 @@ from pymilvus import CollectionSchema
 import pandas as pd
 from db.models.patients import schema as s1
 from db.models.patient_2 import schema as s2
-from app.db.proxy import CollectionProxy
+from db.proxy import CollectionProxy
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ def init_db(conn: MilvusConnection) -> None:
             "症状性癫痫": str
         }).rename(columns=settings.columns_name_map).fillna(value="")
     
+    del df["id"]
     
     delegation.ann_insert(df.to_dict(orient="records"))
     

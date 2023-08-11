@@ -1,6 +1,6 @@
 from typing import Any
 from db.proxy import CollectionProxy
-from schemas import Patient, SearchResponse
+from schemas import Patient, SearchResponse, PatientCreate
 import pandas as pd
 from core.config import settings
 from towhee import DataCollection
@@ -21,7 +21,7 @@ class CRUDPatient:
     ) -> list[dict[str, Any]]:
         return collection.query(field, value)
     
-    def create(self, collection: CollectionProxy, *patients: Patient):        
+    def create(self, collection: CollectionProxy, *patients: PatientCreate):        
         r = collection.ann_insert([_.dict() for _ in patients])
 
         collection.flush()
