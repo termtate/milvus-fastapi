@@ -7,10 +7,7 @@ from db.session import session
 from pymilvus import utility
 from initial_data import main
 
-if not utility.has_collection(settings.milvus.COLLECTION_NAME_1) or not utility.has_collection(settings.milvus.COLLECTION_NAME_2):
-    main()
-
-
+    
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

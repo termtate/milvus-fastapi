@@ -20,6 +20,7 @@ dependencies = [
     "transformers>=4.31.0",
     "httpx>=0.24.1",
     "nuitka>=1.7.9",
+    "pyinstaller>=5.13.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"

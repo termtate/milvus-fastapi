@@ -1,5 +1,4 @@
 from pymilvus import CollectionSchema, DataType, FieldSchema
-from db.models.table import Table
 from core.config import settings
 from pymilvus import utility
 
