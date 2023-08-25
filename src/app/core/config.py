@@ -12,7 +12,7 @@ class MilvusSettings(BaseSettings):
         'index_type': "FLAT",
     }
     
-    VECTER_DIM: int = 512
+    VECTER_DIM: int = 512  # 向量维度
     
     MODEL_NAME_OR_PATH: str = r"I:\distiluse-base-multilingual-cased-v2"
 

@@ -37,6 +37,12 @@ allow-direct-references = true
 [tool.rye.scripts]
 init = { call = "src.app.initial_data", env = { PYTHONPATH = "./src/app/"} }
 pre-start = { call = "src.app.pre_start", env = { PYTHONPATH = "./src/app/"} }
+pack = [
+    "python", "-m",
+    "nuitka", "--standalone", "--show-memory", 
+    "--show-progress", "--output-dir=out", 
+    "--main=src/app/main.py", "--main=src/app/initial_data.py"
+]
 [tool.rye.scripts.server]
 cmd = [
     "python", "-m", 
