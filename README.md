@@ -20,4 +20,4 @@
 
 ## 打包
 
-`rye run pack`
+`rye run pack`（很可能需要科学上网）
