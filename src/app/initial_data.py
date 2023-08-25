@@ -3,6 +3,7 @@ import logging
 from db.init_db import init_db
 from milvus.client import MilvusConnection
 from core.config import settings
+from db.models.patients import patients
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,8 +14,8 @@ def init() -> None:
         init_db(conn=conn)  
         
         collection = conn.get_collection(
-            settings.milvus.COLLECTION_NAME_1,
-            settings.milvus.VECTOR_FIELDS_1
+            patients.table_name,
+            patients.vector_fields
         )
         with collection.load_data():
             logger.info(f"entities number: {collection.collection.num_entities}")

@@ -8,18 +8,17 @@ authors = [
 dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.23.1",
-    "pydantic<2",
     "tenacity>=8.2.2",
     "pymilvus>=2.2.13",
-    "towhee>=1.1.1",
     "pandas>=2.0.3",
-    "towhee.models>=1.1.1",
     "setuptools>=68.0.0",
     "openpyxl>=3.1.2",
     "torch>=2.0.1",
-    "transformers>=4.31.0",
     "httpx>=0.24.1",
     "nuitka>=1.7.9",
+    # "pydantic>=2.2.1",
+    "sentence-transformers>=2.2.2",
+    "pydantic-settings>=2.0.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"

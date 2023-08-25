@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Patient2(BaseModel):
+    model_config: ConfigDict = ConfigDict(from_attributes=True)
+    
     id: int
     feeding_difficulties: str
     emotion_or_feeling: str
@@ -23,6 +25,3 @@ class Patient2(BaseModel):
     diarrhea: str
     tic: str
     autism: str
-    
-    class Config:
-        orm_mode = True

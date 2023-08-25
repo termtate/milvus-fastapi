@@ -1,10 +1,7 @@
 from typing import Any
 from db.proxy import CollectionProxy
-from schemas import Patient, SearchResponse, PatientCreate
-import pandas as pd
+from schemas import PatientCreate
 from core.config import settings
-from towhee import DataCollection
-from pymilvus.exceptions import PrimaryKeyException
 
 
 
@@ -22,7 +19,7 @@ class CRUDPatient:
         return collection.query(field, value)
     
     def create(self, collection: CollectionProxy, *patients: PatientCreate):        
-        r = collection.ann_insert([_.dict() for _ in patients])
+        r = collection.ann_insert([_.model_dump() for _ in patients])
 
         collection.flush()
 

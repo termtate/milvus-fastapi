@@ -1,37 +1,31 @@
 
-from pydantic import BaseSettings
-from pymilvus import FieldSchema, DataType
+from pydantic_settings import BaseSettings
 
 
 class MilvusSettings(BaseSettings):
-    HOST = "localhost"
-    PORT = 19530
-    
-    COLLECTION_NAME_1 = "test1"
-    COLLECTION_NAME_2 = "test2"
+    HOST: str = "localhost"
+    PORT: int = 19530
     
     # https://milvus.io/docs/v2.0.x/build_index.md#Prepare-index-parameter
-    VECTOR_FIELD_INDEX_PARAMS = {
+    VECTOR_FIELD_INDEX_PARAMS: dict[str, str] = {
         'metric_type': "L2", 
         'index_type': "FLAT",
     }
     
-    VECTOR_FIELDS_1: list[str] = [
-        "seizure_evolution",   
-        "precipitating_factor"                                     
-    ]
+    VECTER_DIM: int = 512
     
-    VECTOR_FIELDS_2: list[str] = [
-        "emotion_or_feeling"
-    ]
+    MODEL_NAME_OR_PATH: str = r"I:\distiluse-base-multilingual-cased-v2"
+
+    
+    
 
 
 class Settings(BaseSettings):
-    milvus = MilvusSettings()
+    milvus: MilvusSettings = MilvusSettings()
     
     API_V1_STR: str = "/api/v1"
     
-    columns_name_map = {
+    columns_name_map: dict[str, str] = {
         "ID": "id",
         "身份证号": "id_card_number",
         "姓名": "name",

@@ -3,8 +3,8 @@ from core.config import settings
 from milvus.client import Collection, MilvusConnection
 from pymilvus import CollectionSchema
 import pandas as pd
-from db.models.patients import schema as s1
-from db.models.patient_2 import schema as s2
+from db.models.patients import patients
+from db.models.patient_2 import patients2
 from db.proxy import CollectionProxy
 
 
@@ -29,13 +29,13 @@ def init_db(conn: MilvusConnection) -> None:
 
 def create_collection(conn: MilvusConnection) -> tuple[Collection, Collection]:
     return (conn.create_collection(
-        settings.milvus.COLLECTION_NAME_1,
-        schema=s1,
-        vector_fields=settings.milvus.VECTOR_FIELDS_1,
-        index_params=settings.milvus.VECTOR_FIELD_INDEX_PARAMS
+        collection_name=patients.table_name,
+        schema=CollectionSchema(patients.fields),
+        vector_fields=patients.vector_fields,
+        index_params=patients.index_params
     ), conn.create_collection(
-        settings.milvus.COLLECTION_NAME_2,
-        schema=s2,
-        vector_fields=settings.milvus.VECTOR_FIELDS_2,
-        index_params=settings.milvus.VECTOR_FIELD_INDEX_PARAMS
+        collection_name=patients2.table_name,
+        schema=CollectionSchema(patients2.fields),
+        vector_fields=patients2.vector_fields,
+        index_params=patients2.index_params
     ))

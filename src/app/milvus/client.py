@@ -1,24 +1,28 @@
-from pprint import pprint
-from sre_constants import ANY
-from types import TracebackType
 from pymilvus import SearchResult, connections, CollectionSchema, DataType, utility, FieldSchema
 from pymilvus import Collection as _Collection
-from typing import Any, Union, Optional, overload, List, Sequence, Callable
+from typing import Any, Union, Optional, Sequence
 from contextlib import contextmanager, AbstractContextManager
 from pymilvus.orm.schema import CollectionSchema
 import pandas as pd
-from towhee.runtime.data_queue import DataQueue
 from milvus.types import SearchConfig
 from functools import cache, cached_property
 from milvus.embedding import text_embedding
 from logging import getLogger
 from pymilvus.exceptions import PrimaryKeyException
+from milvus.config import settings
 
 
 logger = getLogger(__name__)
 
 
 class MilvusConnection(AbstractContextManager):
+    '''
+    用来建立milvus连接，获取或者创建milvus的collection
+    :example:
+        >>> from milvus.client import MilvusConnection
+        >>> with MilvusConnection("localhost", 19530) as connection:
+        >>>     collection = connection.get_collection(name="collection_name", embedding_fields=[])
+    '''
     def __init__(
         self, 
         host: str, 
@@ -54,12 +58,38 @@ class MilvusConnection(AbstractContextManager):
         self, 
         collection_name: str, 
         schema: CollectionSchema,
-        # embedding_field: Sequence[str],
         vector_fields: Optional[list[str]] = None,
         index_params: Optional[dict[str, str]] = None
     ):
-        # assert schema.fields[-1].dtype == DataType.FLOAT_VECTOR, "向量字段需要放在最后"
-        
+        '''
+        创建一个collection，如果有同名collection就丢弃之前的collection。\n
+        由于milvus中限制一个collection中只能有一个vector字段，所以若要在collection进行多个列的向量搜索，
+        就必须让每一个向量列都单独建立一个collection，这些collection以pid（外键）联系主表
+        :args:
+            schema: CollectionSchema，其中不需要添加vector类型的字段，向量字段会根据`vector_fields`参数自动生成 \n
+            vector_fields: 需要增加向量字段的字段名 \n
+            index_params: 详情参考 https://milvus.io/docs/build_index.md#Prepare-index-parameter
+        :example:
+            >>> name = "table"
+            >>> fields = [
+            ...     FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
+            ...     FieldSchema(name="name", dtype=DataType.VARCHAR, max_length=100),
+            ...     FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=500)
+            ... ]
+            >>> vector_fields = ["name", "content"]
+            >>> index_params = {
+            ...     'metric_type': "L2", 
+            ...     'index_type': "FLAT",
+            ... }
+            >>> collection = connection.create_collection(
+            ...     collection_name=name,
+            ...     schema=CollectionSchema(fields),
+            ...     vector_fields=vector_fields,
+            ...     index_params=index_params
+            ... )
+            
+        '''
+
         # 如果数据库有同名collection就丢弃
         if utility.has_collection(collection_name):
             utility.drop_collection(collection_name)
@@ -77,13 +107,13 @@ class MilvusConnection(AbstractContextManager):
                         auto_id=True
                     ),
                     FieldSchema(
-                        name="pid",
+                        name="pid",  # 原collection的一行数据对应的id
                         dtype=DataType.INT64,
                     ),
                     FieldSchema(
                         name="vector",
                         dtype=DataType.FLOAT_VECTOR,
-                        dim=768
+                        dim=settings.VECTOR_DIM
                     )
                 ]
                 collection_schema = CollectionSchema(
@@ -96,9 +126,7 @@ class MilvusConnection(AbstractContextManager):
                 coll.create_index(field_name="vector", index_params=index_params)
                 vector_collections.append(coll)
             
-            # collection = _Collection(name=collection_name, schema=schema)
-            
-            # return Collection(self, collection, vector_fields)
+        # collection必须要有一个vector字段
         schema.add_field(
             field_name="unused",
             datatype=DataType.FLOAT_VECTOR,
@@ -113,6 +141,13 @@ class MilvusConnection(AbstractContextManager):
     
     
 class Collection:
+    '''
+    :example:
+        >>> with collection.load_data():
+        >>>     res = collection.query(expr="id in [1, 2]")
+        >>>     print(res)
+        -   [{"id": 1, ...}, {"id": 2, ...}]
+    '''
     def __init__(
         self, 
         connection: "MilvusConnection",
@@ -127,18 +162,28 @@ class Collection:
         }
         
     def load(self):
+        '''
+        collection在搜索数据前需要将数据装载进内存，即每次搜索前要先调用collection.load()
+        '''
         self.collection.load()
         
         for vc in self.vector_collections.values():
             vc.load()
         
     def flush(self):
+        '''
+        保证在collection.flush()之前插入的数据都插入至collection，
+        详情参考 https://milvus.io/api-reference/pymilvus/v2.3.x/Collection/flush().md
+        '''
         self.collection.flush()
         
         for vc in self.vector_collections.values():
             vc.flush()
     
     def release(self):
+        '''
+        释放装载数据的内存
+        '''
         self.collection.release()
         
         for vc in self.vector_collections.values():
@@ -188,6 +233,8 @@ class Collection:
         进行标量查询
         args:
             expr: 查询表达式，具体参见 https://milvus.io/docs/boolean.md
+        returns:
+            包含字典的列表，每个字典的键为字段名，值为字段值
         '''
         if output_fields is None:
             output_fields = self.fields()
@@ -270,6 +317,9 @@ class Collection:
     
     
     def insert(self, *data: list):
+        '''
+        insert raw data
+        '''
         return self.collection.insert(list(zip(*data)))
     
     def ann_search(
@@ -279,10 +329,10 @@ class Collection:
     ) -> list[dict]:
         '''
         执行query的向量相似度查询
-        args:
-            query: 输入的查询，如果为多个，会返回多个对应的结果
-            
+        args:            
             search_config: 查询设置，具体参见 https://milvus.io/docs/v2.0.x/search.md#Conduct-a-vector-search
+        returns:
+            包含字典的列表，每个字典的键为字段名，值为字段值
         '''        
         data = text_embedding(query)
         vector_field = search_config["anns_field"]

@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class Patient(BaseModel):
     id: int
@@ -172,6 +172,7 @@ class SearchResponse(BaseModel):
 
 
 class PatientModifyResult(BaseModel):
+    model_config: ConfigDict = ConfigDict(from_attributes=True)
     # primary_keys: list[int]
     insert_count: int
     delete_count: int
@@ -179,9 +180,6 @@ class PatientModifyResult(BaseModel):
     timestamp: int
     succ_count: int
     err_count: int
-    
-    class Config:
-        orm_mode = True
 
     
     

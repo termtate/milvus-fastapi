@@ -14,7 +14,7 @@ class VectorFields(str, Enum):
     seizure_evolution = "seizure_evolution"
     precipitating_factor = "precipitating_factor"  
     emotion_or_feeling = "emotion_or_feeling"
-# vector_fields = Enum("VectorField", {_: _ for _ in settings.milvus.VECTOR_FIELDS}, type=str)
+
 
 @router.get("/ann_search", response_model=SearchResponse)
 def ann_search_patients(

@@ -3,6 +3,8 @@ import logging
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 from milvus.client import MilvusConnection
 from core.config import settings
+from db.models.patients import patients
+from db.models.patient_2 import patients2
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,7 +22,7 @@ wait_seconds = 1
 def init() -> None:
     try:
         with MilvusConnection(settings.milvus.HOST, settings.milvus.PORT) as conn:
-            collection = conn.get_collection(settings.milvus.COLLECTION_NAME_1, settings.milvus.VECTOR_FIELDS_1)
+            collection = conn.get_collection(patients.table_name, patients2.table_name)
             with collection.load_data():
                 logger.info(f"entities number: {collection.collection.num_entities}")
 
